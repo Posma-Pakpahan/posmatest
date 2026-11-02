@@ -36,16 +36,17 @@ export async function openHoneyProduct(page: Page) {
       product,
       'Daftar madu belum tampil. Periksa verifikasi Cloudflare atau ketersediaan produk di area terpilih.',
     ).toBeVisible({ timeout: manualVerification ? 120_000 : 30_000 });
+    const productName = (await product.innerText())
+      .split(/\bRp\.?\s*/i)[0]
+      .replace(/\s+/g, ' ')
+      .trim();
+    expect(productName).toMatch(/madu|honey/i);
     const productUrl = await product.getAttribute('href');
     if (!productUrl) throw new Error('Tautan halaman detail produk tidak ditemukan.');
     const expectedUrl = new URL(productUrl, page.url());
     await product.click();
     await expect(page).toHaveURL((url) => url.pathname === expectedUrl.pathname);
-    await expect(page.getByRole('heading', { name: /madu|honey/i }).first()).toBeVisible();
-    const cartButton = page.getByRole('button', { name: /keranjang/i }).first();
-    await expect(cartButton).toBeVisible();
-    await expect(cartButton, 'Produk yang dipilih harus tersedia untuk ditambahkan.').toBeEnabled();
-    return cartButton;
+    return productName;
   });
 }
 

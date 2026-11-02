@@ -1,14 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { loginModal, openHoneyProduct } from './helpers';
+import { openHoneyProduct } from './helpers';
 
-test('pengunjung memilih madu, membuka detail, dan diminta login saat menambah keranjang', async ({ page }) => {
-  const cartButton = await openHoneyProduct(page);
+test('pengunjung memilih kategori Madu dan membuka detail produk', async ({ page }) => {
+  const productName = await openHoneyProduct(page);
 
-  await test.step('Klik keranjang dan pastikan form login muncul', async () => {
-    await cartButton.click();
-    const login = loginModal(page);
-    await expect(login).toBeVisible();
-    await expect(login.getByPlaceholder('Masukkan nomor handphone atau email', { exact: true })).toBeEditable();
-    await expect(login.getByRole('button', { name: 'Selanjutnya', exact: true })).toBeDisabled();
+  await test.step('Pastikan nama dan harga tampil pada detail produk terpilih', async () => {
+    await expect(page.getByRole('heading', { name: productName, exact: true })).toBeVisible();
+    // Harga mengikuti produk dan area belanja, sehingga tidak dikunci ke Rp25.500.
+    await expect(page.getByText(/^Rp\.?\s*[\d.,]+/).first()).toBeVisible();
   });
 });

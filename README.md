@@ -1,6 +1,6 @@
 # Klik Indomaret — Playwright + TypeScript
 
-Proyek sederhana: satu test pengunjung, satu setup login manual, dan satu test dengan sesi. Tidak memakai Cucumber, Page Object Model, atau framework tambahan.
+Test utama mengikuti alur **beranda → Kategori → Makanan → Madu → detail produk** dan selesai ketika nama serta harga produk tampil. Setup login dan test keranjang tersedia sebagai skenario opsional. Tidak memakai Cucumber, Page Object Model, atau framework tambahan.
 
 ## Instalasi
 
@@ -8,10 +8,9 @@ Gunakan Node.js 22.16 atau lebih baru dan Google Chrome yang sudah terpasang. Pl
 
 ```powershell
 npm ci
-Copy-Item .env.example .env
 ```
 
-Isi `LOGIN_EMAIL` dan `LOGIN_PASSWORD` di `.env`. Di komputer proyek ini, `.env` sudah diisi; jangan timpa jika masih akan memakai akun yang sama.
+Test utama tidak memerlukan `.env`, kredensial, atau OTP. Untuk login opsional, salin `.env.example` menjadi `.env` dan isi `LOGIN_EMAIL` serta `LOGIN_PASSWORD`. Jangan menimpa `.env` lokal yang sudah berisi kredensial Anda.
 
 ## Jalankan
 
@@ -24,12 +23,14 @@ Browser terlihat secara default saat dijalankan lokal. Alurnya:
 1. Buka beranda Klik Indomaret.
 2. Klik Kategori → Makanan → Madu.
 3. Pilih satu produk madu dan buka halaman detailnya.
-4. Klik tombol keranjang pada detail produk.
-5. Pastikan form Masuk Akun muncul dan tombol Selanjutnya belum aktif ketika email kosong.
+4. Memastikan URL sesuai tautan detail produk yang dipilih.
+5. Memastikan judul sesuai nama produk dan harga rupiah tampil.
 
-Test pengunjung memang selesai di form login. Test ini tidak mengirim kredensial atau meminta OTP.
+Test utama selesai di halaman detail produk tanpa menambahkan barang ke keranjang. Harga mengikuti produk, promo, dan area belanja, sehingga nilainya tidak dikunci ke screenshot.
 
-## Verifikasi email dan sesi
+## Login dan keranjang opsional
+
+Perintah berikut terpisah dari test utama yang berhenti di detail produk.
 
 ```powershell
 npm run auth
@@ -66,13 +67,17 @@ Untuk memberi waktu hingga dua menit menyelesaikan verifikasi human pada beranda
 
 Selector kategori sudah diperiksa pada DOM langsung. Alur setelah masuk kategori, login berhasil, dan mutasi keranjang masih perlu divalidasi ketika akses Cloudflare dan OTP tersedia. Kegagalan akses tetap dilaporkan sebagai kegagalan test.
 
-Acuan form login adalah screenshot yang diberikan: judul **Masuk Akun**, placeholder **Masukkan nomor handphone atau email**, serta tombol **Selanjutnya** yang nonaktif ketika input kosong. Screenshot memperlihatkan modal di halaman daftar produk; test tetap mengikuti permintaan membuka detail produk terlebih dahulu. Struktur DOM detail produk dan alur sesudah memasukkan email belum dikonfirmasi, sehingga bagian tersebut masih perlu penyesuaian setelah pengujian live memungkinkan.
+Acuan screenshot terbaru adalah kategori Madu dan keranjang berisi **Madurasa Madu Jahe Merah Lemon 160g**. Test utama memilih salah satu produk di kategori dan memeriksa nama yang sama pada halaman detail. Selector detail mengasumsikan nama produk tampil sebagai heading dan harga sebagai teks rupiah. Struktur DOM detail dan alur login lanjutan belum dikonfirmasi, sehingga masih perlu validasi live.
+
+Perubahan terakhir diperiksa dengan TypeScript dan daftar test tanpa membuka browser, sesuai permintaan pengguna. Alur E2E terbaru belum dijalankan.
 
 Pemeriksaan lokal: TypeScript lolos. Pada percobaan ulang, beranda dan menu Kategori → Makanan → Madu berhasil diklik setelah selector Makanan dibatasi ke menu kategori. Halaman kategori Madu kemudian menampilkan verifikasi manusia Cloudflare sehingga daftar produk belum dapat diperiksa. Belum ada hasil E2E lulus atau sesi login yang tersimpan.
 
 Percobaan dengan waktu tunggu dua menit untuk verifikasi manual juga berakhir di halaman Cloudflare. Test sesi tanpa file autentikasi berhasil dilaporkan `skipped`.
 
 ## Unggah ke GitHub
+
+Repository: [Posma-Pakpahan/posmatest](https://github.com/Posma-Pakpahan/posmatest/tree/codex/klikindomaret-playwright), branch `codex/klikindomaret-playwright`.
 
 `.env`, sesi login, `node_modules`, report, dan file pemeriksaan sementara sudah masuk `.gitignore`. `.env.example` hanya berisi placeholder.
 

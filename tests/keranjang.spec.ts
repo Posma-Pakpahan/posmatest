@@ -5,11 +5,15 @@ import { authFile, loginModal, openHoneyProduct } from './helpers';
 test.skip(!existsSync(authFile), 'Sesi belum tersedia. Jalankan npm run auth dan selesaikan OTP manual.');
 
 test('pengguna login menambahkan produk madu ke keranjang', async ({ page }) => {
-  const cartButton = await openHoneyProduct(page);
+  await openHoneyProduct(page);
   await expect(
     page.getByRole('button', { name: 'Masuk', exact: true }),
     'Sesi sudah kedaluwarsa. Jalankan npm run auth lagi.',
   ).toBeHidden();
+
+  const cartButton = page.getByRole('button', { name: /keranjang/i }).first();
+  await expect(cartButton).toBeVisible();
+  await expect(cartButton, 'Produk yang dipilih harus tersedia untuk ditambahkan.').toBeEnabled();
 
   // Respons mutasi harus berhasil; sekadar modal login tidak muncul belum cukup.
   const [response] = await Promise.all([
